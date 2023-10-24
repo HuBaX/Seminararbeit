@@ -2,17 +2,23 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
-func race_condition() int {
+func raceCondition() int {
 	data := 0
+	var dataAccess sync.Mutex
 	go func() {
+		dataAccess.Lock()
 		data++
+		dataAccess.Unlock()
 	}()
+	dataAccess.Lock()
 	if data == 0 {
 		print("")
 		return data
 	}
+	dataAccess.Unlock()
 	return -1
 }
 
@@ -33,7 +39,7 @@ func print_shares(values []int, outputs []int) {
 func main() {
 	var outputs []int
 	for i := 0; i < 100000; i++ {
-		outputs = append(outputs, race_condition())
+		outputs = append(outputs, raceCondition())
 	}
 	print_shares([]int{-1, 0, 1}, outputs)
 }
