@@ -36,10 +36,53 @@ func print_shares(values []int, outputs []int) {
 	}
 }
 
-func main() {
+func showRaceCondition() {
 	var outputs []int
 	for i := 0; i < 100000; i++ {
 		outputs = append(outputs, raceCondition())
 	}
 	print_shares([]int{-1, 0, 1}, outputs)
+}
+
+func simple_deadlock() {
+	a := 0
+	b := 0
+	var aMutex sync.Mutex
+	var bMutex sync.Mutex
+	go func() {
+		aMutex.Lock()
+		bMutex.Lock()
+		//simulate work
+		if a == 1 && b == 1 {
+			a++
+			b++
+		}
+		bMutex.Unlock()
+		aMutex.Unlock()
+	}()
+	bMutex.Lock()
+	aMutex.Lock()
+	//simulate work
+	if a == 0 && b == 0 {
+		b++
+		a++
+	}
+	aMutex.Unlock()
+	bMutex.Unlock()
+}
+
+func communication_deadlock() {
+	ch := make(chan int)
+
+	go func() {
+		data := <-ch
+		fmt.Println("Received:", data)
+	}()
+
+	data := <-ch
+	fmt.Println("Received:", data)
+}
+
+func main() {
+	communication_deadlock()
 }
