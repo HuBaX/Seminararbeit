@@ -83,6 +83,48 @@ func communication_deadlock() {
 	fmt.Println("Received:", data)
 }
 
+func deadlock3Threads() {
+	a := 0
+	b := 0
+	c := 0
+	lockA := &sync.Mutex{}
+	lockB := &sync.Mutex{}
+	lockC := &sync.Mutex{}
+
+	go func() {
+		lockA.Lock()
+		lockB.Lock()
+		if a == 0 && b == 0 {
+			a++
+			b++
+		}
+		lockB.Unlock()
+		lockA.Unlock()
+	}()
+
+	go func() {
+		lockB.Lock()
+		lockC.Lock()
+		if b == 0 && c == 0 {
+			b++
+			c++
+		}
+		lockC.Unlock()
+		lockB.Unlock()
+	}()
+
+	lockC.Lock()
+	lockA.Lock()
+	if c == 0 && a == 0 {
+		c++
+		a++
+	}
+	lockA.Unlock()
+	lockC.Unlock()
+}
+
 func main() {
-	communication_deadlock()
+	for i := 0; i < 10000000; i++ {
+		deadlock3Threads()
+	}
 }
