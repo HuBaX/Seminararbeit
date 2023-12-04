@@ -45,30 +45,38 @@ func showRaceCondition() {
 }
 
 func simple_deadlock() {
-	a := 0
-	b := 0
-	var aMutex sync.Mutex
-	var bMutex sync.Mutex
+	x := 0
+	y := 0
+	var xMutex sync.Mutex
+	var yMutex sync.Mutex
 	go func() {
-		aMutex.Lock()
-		bMutex.Lock()
-		//simulate work
-		if a == 1 && b == 1 {
-			a++
-			b++
-		}
-		bMutex.Unlock()
-		aMutex.Unlock()
+		xMutex.Lock()
+		yMutex.Lock()
+		x, y = doWork(x, y)
+		yMutex.Unlock()
+		xMutex.Unlock()
 	}()
-	bMutex.Lock()
-	aMutex.Lock()
-	//simulate work
+	yMutex.Lock()
+	xMutex.Lock()
+	x, y = doOtherWork(x, y)
+	xMutex.Unlock()
+	yMutex.Unlock()
+}
+
+func doWork(a int, b int) (int, int) {
+	if a == 1 && b == 1 {
+		a++
+		b++
+	}
+	return a, b
+}
+
+func doOtherWork(a int, b int) (int, int) {
 	if a == 0 && b == 0 {
 		b++
 		a++
 	}
-	aMutex.Unlock()
-	bMutex.Unlock()
+	return a, b
 }
 
 func communication_deadlock() {
